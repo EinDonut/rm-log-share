@@ -42,7 +42,7 @@ jar {
 
 application {
     // Define the main class for the application.
-    mainClass = 'me.donut.rmlogshare.Main'
+    mainClass = 'me.donut.rmlogshare.RmLogShare'
 }
 
 tasks.named('test') {
