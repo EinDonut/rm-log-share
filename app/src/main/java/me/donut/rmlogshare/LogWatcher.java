@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.io.BufferedReader;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.BasicFileAttributes;
+import static me.donut.rmlogshare.Logger.*;
 
 public class LogWatcher extends Thread {
 
@@ -17,6 +18,7 @@ public class LogWatcher extends Thread {
 	int lastFileLines = -1;
 	FileTime lastUpdateTime;
 	FileTime lastCreateTime;
+	boolean stop = false;
 
 	public LogWatcher() {
 		path = Paths.get(String.join(File.separator, new String[] {
@@ -26,8 +28,9 @@ public class LogWatcher extends Thread {
 	}
 
 	public void run() {
+		info("Beobachte Datei '" + path.toString() + "'");
 		try {
-			while(true) {
+			while(!stop) {
 				BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
 				FileTime updateTime = attr.lastModifiedTime();
 				FileTime createTime = attr.creationTime();
@@ -53,13 +56,22 @@ public class LogWatcher extends Thread {
 		BufferedReader in = new BufferedReader(new FileReader(path.toAbsolutePath().toString()));
 		String line;
 		int lineCount = 0;
-		if (lastFileLines == -1) return;
 		while ((line = in.readLine()) != null) {
-			if (lineCount++ < lastFileLines) continue;
+			if (lineCount++ < lastFileLines || lastFileLines == -1) continue;
 			line = line.substring(Math.min(11, line.length()));
-			if (!line.startsWith("[Client thread/INFO]: [CHAT] ")) continue;
-			RmLogShare.getInstance().getSocketHandler().sendMessage(line);
+			if (!line.startsWith("[Client thread/INFO]: [CHAT] [RageMode] ")) continue;		
+			line = line.substring(Math.min(40, line.length()));
+
+			if (RmLogShare.getInstance().getUserPrompt().isTestMode()) {
+				info("**TEST** " + line);
+			} else {
+				RmLogShare.getInstance().getSocketHandler().sendMessage("DTA " + line, true);
+			}
 		}
 		lastFileLines = lineCount;
+	}
+
+	public void terminate() {
+		stop = true;
 	}
 }
