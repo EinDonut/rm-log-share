@@ -6,39 +6,38 @@ public class RmLogShare {
 	private LogWatcher logWatcher;
 	private UserPrompt userPrompt;
 	private static RmLogShare instance;
-	private boolean testMode = false;
 	
 	public RmLogShare() {
 		instance = this;
-		socketHandler = new SocketHandler("192.168.179.202", 25566);
+		socketHandler = new SocketHandler("192.168.2.129", 25566);
 
 		logWatcher = new LogWatcher();
 		userPrompt = new UserPrompt();
 
 		socketHandler.start();
-		logWatcher.start();
 
 		registerShutdownHook();
 	}
 	
+	/**
+	 * @return The SocketHandler, which handles the communication with the server
+	 */
 	public SocketHandler getSocketHandler() {
 		return socketHandler;
 	}
 
+	/**
+	 * @return The LogWatcher, which detects changes in the log file
+	 */
 	public LogWatcher getLogWatcher() {
 		return logWatcher;
 	}
 
+	/**
+	 * @return The UserPrompt, which handles the user input
+	 */
 	public UserPrompt getUserPrompt() {
 		return userPrompt;
-	}
-
-	public void setTestMode(boolean testMode) {
-		this.testMode = testMode;
-	}
-
-	public boolean isTestMode() {
-		return testMode;
 	}
 
 	public static RmLogShare getInstance() {
@@ -56,5 +55,15 @@ public class RmLogShare {
 				getSocketHandler().stopConnection();
 			}
 		});
+	}
+
+	/**
+	 * Represent the minecraft client type
+	 */
+	public enum Client {
+		VANILLA,
+		BADLION,
+		LUNAR,
+		LABYMOD
 	}
 }
