@@ -7,11 +7,11 @@ public class RmLogShare {
 	private UserPrompt userPrompt;
 	private static RmLogShare instance;
 	
-	public RmLogShare() {
+	public RmLogShare(String watchPath) {
 		instance = this;
 		socketHandler = new SocketHandler("192.168.2.129", 25566);
 
-		logWatcher = new LogWatcher();
+		logWatcher = new LogWatcher(watchPath);
 		userPrompt = new UserPrompt();
 
 		socketHandler.start();
@@ -45,7 +45,7 @@ public class RmLogShare {
 	}
 
 	public static void main(String[] args) {
-		new RmLogShare();
+		new RmLogShare(args.length > 0 ? args[0] : "");
 	}
 
 	private void registerShutdownHook() {

@@ -23,31 +23,48 @@ public class LogWatcher extends Thread {
 	FileTime lastUpdateTime;
 	FileTime lastCreateTime;
 	boolean stop = false;
+	private final String OS = System.getProperty("os.name").toLowerCase();
+    private final boolean IS_WINDOWS = (OS.indexOf("win") >= 0);
+    private final boolean IS_MAC = (OS.indexOf("mac") >= 0);
+    private final boolean IS_UNIX = (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0);
+
+	public LogWatcher(String filePath) {
+		if (filePath.equals("")) return;
+		path = Paths.get(filePath);
+	}
 
 	/**
 	 * Update the path to fit the client used
 	 * @param userClient The client to be used
 	 */
 	public void changeClient(RmLogShare.Client userClient) {
-		switch (userClient) {
-			case LABYMOD: case VANILLA:
-				path = Paths.get(String.join(File.separator, new String[] {
-					System.getProperty("user.home"),
-					"AppData", "Roaming", ".minecraft", "logs", "latest.log"
-				}));
-				break;
-			case BADLION:
-				path = Paths.get(String.join(File.separator, new String[] {
-					System.getProperty("user.home"),
-					"AppData", "Roaming", ".minecraft", "logs", "blclient", "minecraft", "latest.log"
-				}));
-				break;
-			case LUNAR:
-				path = Paths.get(String.join(File.separator, new String[] {
-					System.getProperty("user.home"),
-					".lunarclient", "offline", "multiver", "logs", "latest.log"
-				}));
-				break;
+		if (path == null) {
+			String minecraftDir = "null";
+			if (IS_WINDOWS) minecraftDir = String.join(File.separator, new String[] {
+						System.getProperty("user.home"), "AppData", "Roaming", ".minecraft"});
+			else if (IS_MAC) minecraftDir = String.join(File.separator, new String[] {
+						System.getProperty("user.home"), "Library", "Application Support", "minecraft"});
+			else if (IS_UNIX) minecraftDir = String.join(File.separator, new String[] {
+						System.getProperty("user.home"), ".minecraft"});
+
+			switch (userClient) {
+				case LABYMOD: case VANILLA:
+					path = Paths.get(String.join(File.separator, new String[] {
+						minecraftDir, "logs", "latest.log"
+					}));
+					break;
+				case BADLION:
+					path = Paths.get(String.join(File.separator, new String[] {
+						minecraftDir, "logs", "blclient", "minecraft", "latest.log"
+					}));
+					break;
+				case LUNAR:
+					path = Paths.get(String.join(File.separator, new String[] {
+						System.getProperty("user.home"),
+						".lunarclient", "offline", "multiver", "logs", "latest.log"
+					}));
+					break;
+			}
 		}
 
 		info("Beobachte Datei '" + path.toString() + "'");
@@ -74,8 +91,8 @@ public class LogWatcher extends Thread {
 				Thread.sleep(100);
 			}
 		} catch (NoSuchFileException ex) {
-			error("Datei nicht gefunden '" + path.toString() + "'");
-			info("Beobachten der Datei gestoppt");
+			error("\nDatei nicht gefunden '" + path.toString() + "'");
+			System.exit(1);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -94,9 +111,16 @@ public class LogWatcher extends Thread {
 			if (lineCount++ < lastFileLines || lastFileLines == -1) continue;
 			line = line.substring(Math.min(11, line.length()));
 
-			if (RmLogShare.getInstance().getUserPrompt().isAdminMode() && 
-					line.startsWith("[Client thread/INFO]: [CHAT] Teams sind auf diesem Server VERBOTEN"))
-				RmLogShare.getInstance().getSocketHandler().admin("start");
+			// if (RmLogShare.getInstance().getUserPrompt().isAdminMode() && 
+			// 		line.startsWith("[Client thread/INFO]: [CHAT] Teams sind auf diesem Server VERBOTEN"))
+			// 	RmLogShare.getInstance().getSocketHandler().admin("start");
+
+			if (line.toLowerCase().endsWith(": go!")) {
+				String senderName = line.substring(29, line.length() - 5);
+				if (senderName.startsWith("[")) senderName = senderName.split(" ")[1];
+				RmLogShare.getInstance().getSocketHandler().sendMessage("PAR " + senderName, true);
+				continue;
+			}
 
 			if (!line.startsWith("[Client thread/INFO]: [CHAT] [RageMode] ")) continue;		
 			line = line.substring(Math.min(40, line.length()));
@@ -108,6 +132,7 @@ public class LogWatcher extends Thread {
 			}
 		}
 		lastFileLines = lineCount;
+		in.close();
 	}
 
 	/**

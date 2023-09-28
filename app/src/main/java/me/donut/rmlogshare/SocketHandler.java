@@ -23,6 +23,10 @@ public class SocketHandler extends Thread {
 	public SocketHandler(String ip, int port) {
 		this.ip = ip;
 		this.port = port;
+
+		if (!ip.equals("")) return;
+		error("Es wurde keien IP angegeben!");
+		System.exit(1);
 	}
 
 	public void run() {
@@ -40,7 +44,7 @@ public class SocketHandler extends Thread {
 
 			if (!keepAlive) return;
 			clientSocket.setSoTimeout(3000);
-			if (!(in.readLine().equals("KEA"))) throw new SocketException();
+			if (!(in.readLine().equals("ACK"))) throw new SocketException();
 			clientSocket.setSoTimeout(0);
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -76,7 +80,6 @@ public class SocketHandler extends Thread {
 			info("Verbindung erfolgreich");
 			RmLogShare.getInstance().getUserPrompt().promptClient();
 		} catch (Exception ex) {
-			ex.printStackTrace();
 			info("Verbindung fehlgeschlagen");
 			reconnect();
 		}
