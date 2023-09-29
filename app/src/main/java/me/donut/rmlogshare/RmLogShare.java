@@ -9,7 +9,7 @@ public class RmLogShare {
 	
 	public RmLogShare(String watchPath) {
 		instance = this;
-		socketHandler = new SocketHandler("192.168.2.129", 25566);
+		socketHandler = new SocketHandler("", 25566);
 
 		logWatcher = new LogWatcher(watchPath);
 		userPrompt = new UserPrompt();
