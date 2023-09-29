@@ -38,6 +38,7 @@ Mögliche Optionen sind:
 - LabyMod
 - Badlion
 - Lunar
+- 
 Ist der verwendete Client nicht in der Liste aufgeführt, so sollte auf `Vanilla` zurückgegriffen werden. Diese Option wird ebenfalls gewählt, wenn keine Eingabe getätigt wird.
 
 ### Login
