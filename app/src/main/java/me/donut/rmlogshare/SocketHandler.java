@@ -43,8 +43,11 @@ public class SocketHandler extends Thread {
 			out.println(msg);
 
 			if (!keepAlive) return;
-			clientSocket.setSoTimeout(3000);
-			if (!(in.readLine().equals("ACK"))) throw new SocketException();
+			clientSocket.setSoTimeout(5000);
+			String response = in.readLine();
+			if (!(response.equals("ACK"))) {
+				throw new SocketException();
+			}
 			clientSocket.setSoTimeout(0);
 		} catch (Exception ex) {
 			ex.printStackTrace();

@@ -115,8 +115,8 @@ public class LogWatcher extends Thread {
 			// 		line.startsWith("[Client thread/INFO]: [CHAT] Teams sind auf diesem Server VERBOTEN"))
 			// 	RmLogShare.getInstance().getSocketHandler().admin("start");
 
-			if (line.toLowerCase().endsWith(": go!")) {
-				String senderName = line.substring(29, line.length() - 5);
+			if (line.toLowerCase().endsWith(": go!") || line.toLowerCase().endsWith(": go! ?")) {
+				String senderName = line.substring(29, line.length() - (line.toLowerCase().endsWith(": go!") ? 5 : 7));
 				if (senderName.startsWith("[")) senderName = senderName.split(" ")[1];
 				RmLogShare.getInstance().getSocketHandler().sendMessage("PAR " + senderName, true);
 				continue;
